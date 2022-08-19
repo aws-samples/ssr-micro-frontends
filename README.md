@@ -14,7 +14,7 @@ In this example we have created a basic example that leverages the building bloc
 
 The architecture in this example is represented in the following diagram:
 
-![SSR micro-frontends](./images/diagram.jpg)
+![SSR micro-frontends](./images/diagram.png)
 
 ## Installation
 Please ensure you have the [AWS CLI](https://aws.amazon.com/cli) installed and configured with [credentials](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
