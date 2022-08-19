@@ -1,0 +1,68 @@
+{
+    "Comment": "A state machine that chaches a micro-frontends using step functions",
+    "StartAt": "CheckDB",
+    "States": {
+        "CheckDB":{
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:getItem",
+            "Parameters": {
+                "TableName": "${TableName}",
+                "Key": {
+                    "ID": "book-0001"
+                }
+            },
+            "ResultPath": "$.cache",
+            "Next": "if no data"
+        },
+        "if no data":{
+            "Type": "Choice",
+            "Default": "Return cached page",
+            "Choices":[
+                {
+                    "Variable": "$.cache.SdkHttpMetadata.HttpHeaders.Content-Length",
+                    "StringEquals": "2",
+                    "Next": "Get Product Data"
+                }
+            ]            
+        },
+        "Get Product Data":{
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:getItem",
+            "Parameters": {
+                "TableName": "${ProductsTable}",
+                "Key": {
+                    "ID": "book-0001"
+                }
+            },
+            "ResultPath": "$.product",
+            "OutputPath": "$.product.Item",
+            "Next": "Product Rendering"
+        },
+        "Product Rendering":{
+            "Type": "Task",
+            "Resource": "${ProductFunctionArn}",
+            "InputPath": "$",
+            "ResultPath": "$.cache",
+            "Next": "Cache MFE"
+        },
+        "Cache MFE":{
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:putItem",
+            "InputPath": "$.cache",
+            "Parameters": {
+                "TableName": "${TableName}",
+                "Item": {
+                    "ID": "book-0001",
+                    "cached.$": "$"
+                }
+            },
+            "ResultPath": "$.db.result",
+            "OutputPath": "$.cache",
+            "End": true
+        },
+        "Return cached page": {
+            "Type": "Succeed",
+            "OutputPath": "$.cache.Item.cached.S"
+        }
+    }
+}

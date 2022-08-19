@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  reviews-mfe
+
+  Sample SAM Template for reviews-mfe
+  
+Globals:
+  Function:
+    Timeout: 30
+    Tracing: Active
+    Runtime: nodejs16.x
+    MemorySize: 256
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+        Region: !Ref AWS::Region
+        DatabaseTable: !Ref DynamoTable
+  Api:
+    TracingEnabled: True
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+    EndpointConfiguration:
+      Type: REGIONAL 
+    
+Resources:
+  DynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: ID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ID
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  SubmitReviewsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: reviews/
+      Handler: POST_Reviews.lambdaHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoTable
+      Events:
+        ReviewsGateway:
+          Type: Api
+          Properties:
+            Path: /review
+            Method: post
+  ReviewsMFEFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: reviews/server-build/
+      Handler: GET_Reviews.lambdaHandler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref DynamoTable
+      Events:
+        ReviewsGateway:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+
+Outputs:
+  ReviewsGatewayApi:
+    Description: "API Gateway endpoint URL for Prod stage for reviews function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

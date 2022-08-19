@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SSR-micro-frontends
+
+Globals:
+  Function:
+    Runtime: nodejs16.x
+    MemorySize: 256
+    Timeout: 15
+    Tracing: Active
+    Architectures:
+      - arm64
+
+Parameters:
+  DDBCachedTable:
+    Type: String
+    Default: CachedProductsTable
+  DDBProductsTable:
+    Type: String
+    Default: ProductsTable
+
+Resources:
+
+  DynamoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DDBCachedTable
+      AttributeDefinitions:
+      - AttributeName: ID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ID
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DDBProductsTable
+      AttributeDefinitions:
+      - AttributeName: ID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ID
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  
+  ProductStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Type: EXPRESS
+      Tracing: 
+        Enabled: true
+      DefinitionUri: statemachine/product-orchestrator.asl.json
+      DefinitionSubstitutions:
+        ProductFunctionArn: !GetAtt ProductFunction.Arn
+        TableName: !Ref DynamoTable
+        ProductsTable: !Ref ProductsTable
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ProductFunction
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+
+  ProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      AutoPublishAlias: prod
+      CodeUri: functions/product
+      Handler: server-build/app.lambdaHandler
+  
+  ApiGatewayStepFunctionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: !Join ["", ["/", !Ref "AWS::StackName", "/"]]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowApiGatewayServiceToAssumeRole
+            Effect: Allow
+            Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+      Policies:
+        - PolicyName: CallStepFunctions
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'states:StartSyncExecution'
+                Resource:
+                  - !Ref ProductStateMachine
+  
+  CatalogGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Name: !Sub ${AWS::StackName}
+
+  CatalogGatewayRootMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: true
+              method.response.header.Access-Control-Allow-Methods: true
+              method.response.header.Access-Control-Allow-Headers: true
+          ResponseModels:
+            text/html: Empty
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS
+        Credentials: !GetAtt ApiGatewayStepFunctionsRole.Arn 
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:states:action/StartSyncExecution
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates: 
+          application/json: !Sub 
+            - |-
+              {
+                "stateMachineArn": "${StateMachineArn}"
+              }
+            - { StateMachineArn: !Ref ProductStateMachine }
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods : "'POST,GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin : "'*'"
+            ResponseTemplates:
+              text/html: "#set($html = $input.path('$.output'))\n$util.parseJson($html)"
+              # text/html: "#set($html = $input.path('$.output'))\n#set($context.responseOverride.header.Cache-Control = 'public, max-age=10')\n$util.parseJson($html)"
+      ResourceId: !GetAtt CatalogGateway.RootResourceId
+      RestApiId: !Ref CatalogGateway
+  
+  CatalogGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - CatalogGatewayRootMethod
+    Properties:
+      RestApiId: !Ref CatalogGateway
+      StageName: 'Prod'
+      StageDescription:
+        TracingEnabled: true

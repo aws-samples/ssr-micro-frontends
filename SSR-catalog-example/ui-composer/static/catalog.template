@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+      <title>AWS micro-frontends</title>
+      <script src="./static/nanoevents.js" type="module"></script>
+      <script src="./static/preact.min.js"></script>
+      <script src="./static/htm.min.js"></script>
+      <script src="https://kit.fontawesome.com/09fc766a8c.js" crossorigin="anonymous" async></script>
+      <style>
+        body{
+          font-family: Helvetica, sans-serif;
+        }  
+        .logo {
+          color: white;
+          display: inline-block;
+          font-size: 25px;
+          margin: 5px
+        }
+        header {
+          width: 100%;
+          height: 40px;
+          background-color: grey
+        } 
+      </style>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="Server-Side Rendering Example using Micro-Frontends in AWS">
+    </head>
+    <body>
+      <header>
+        <i class="logo fa-brands fa-aws"></i>
+      </header>
+      <div id="noitificationscontainer">
+        <script src="./static/notifications.js" defer></script>
+      </div>
+            ${catalog}
+            ${review}
+    </body>
+    </html>

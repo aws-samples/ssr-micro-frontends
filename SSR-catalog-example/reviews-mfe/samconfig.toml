@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "reviews-mfe"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-101fh5go5hc3q"
+s3_prefix = "reviews-mfe"
+region = "eu-west-1"
+profile = "serverless"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
