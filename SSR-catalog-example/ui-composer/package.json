@@ -17,7 +17,9 @@
     "@types/prettier": "2.6.0",
     "aws-cdk": "2.33.0",
     "aws-cdk-lib": "2.33.0",
+    "cdk-nag": "^2.16.4",
     "jest": "^27.5.1",
+    "source-map-support": "^0.5.21",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.9.1",
     "typescript": "~3.9.7"
@@ -30,10 +32,9 @@
     "axios": "^0.27.2",
     "constructs": "^10.0.0",
     "es6-dynamic-template": "^2.0.0",
-    "fastify": "^4.3.0",
+    "fastify": "^4.5.3",
     "htm": "^3.1.1",
     "ordered-read-streams": "^1.0.1",
-    "preact": "^10.10.0",
-    "source-map-support": "^0.5.21"
+    "preact": "^10.10.0"
   }
 }

@@ -4,7 +4,7 @@ const serverError = () => {
                 <title>Error page MFE SSR</title>
             </head>
             <body>
-                <h1>Error page</h1>
+                <h1>Error page, something went wrong...</h1>
             </body>
         </html>`
 }

@@ -1,40 +1,57 @@
-import { Stack, StackProps, aws_iam } from 'aws-cdk-lib';
+import { Stack, StackProps, aws_iam, CfnParameter, App } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
 import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
-import { Vpc } from "aws-cdk-lib/aws-ec2";
+import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination, Port } from "aws-cdk-lib/aws-ec2";
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
-import { Construct } from 'constructs';
-import * as path from 'path';
 
+import * as path from 'path';
+import { NagSuppressions } from 'cdk-nag';
 
 export class UiComposerStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: App, id: string, props?: StackProps) {
     super(scope, id, props);
-    
-      // --------  UI-COMPOSER-MICROSERVICE ------------    
+      // --------  S3 Bucket ------------  
+      const sourceBucket = new Bucket(this, 'mfe-static-assets', {
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+        enforceSSL: true
+      });
+
+      // --------  UI-COMPOSER-MICROSERVICE ------------  
       const vpc = new Vpc(this, "ui-composer-vpc", {
         maxAzs: 3
       });
 
       const cluster = new Cluster(this, "ui-composer-cluster", {
-        vpc: vpc
+        vpc: vpc,
+        containerInsights: true,
+      });
+
+      const vpcLogGroup = new LogGroup(this, 'VPCLogGroup');
+      const role = new Role(this, "vpc-log-group", {
+        assumedBy: new ServicePrincipal('vpc-flow-logs.amazonaws.com')
+      });
+
+      const flowlog = new FlowLog(this, 'FlowLog', {
+        resourceType: FlowLogResourceType.fromVpc(vpc),
+        destination: FlowLogDestination.toCloudWatchLogs(vpcLogGroup, role)
       });
 
 
       // -------- PARAMETER STORE -------
-      
-      const catalogARN = StringParameter.valueForStringParameter(this, '/ssr-mfe/catalogARN');
-      const reviewsARN = StringParameter.valueForStringParameter(this, '/ssr-mfe/reviewsARN');
-      const bucketARN = StringParameter.valueForStringParameter(this, '/ssr-mfe/bucketARN');
+
+      const catalogARN = StringParameter.valueForStringParameter(this, this.node.tryGetContext('catalogArn'));
+      const reviewsARN = StringParameter.valueForStringParameter(this, this.node.tryGetContext('reviewsArn'));
       
       // ----------------------------------------
 
       const taskRole = new aws_iam.Role(this, "fargate-task-role", {
         assumedBy: new aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
         roleName: "fargate-task-role",
-        description: "IAM role for consuming MFEs"
+        description: "IAM role for consuming MFEs"  
       });
 
       taskRole.attachInlinePolicy(
@@ -42,8 +59,8 @@ export class UiComposerStack extends Stack {
           statements: [
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
-              actions: ["ssm:*"],
-              resources: ["*"],
+              actions: ["ssm:GetParameter"],
+              resources: ["*"]
             }),
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
@@ -57,8 +74,13 @@ export class UiComposerStack extends Stack {
             }),
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
-              actions: ["s3:ListBucket", "s3:GetObject"],
-              resources: [bucketARN]
+              actions: ["s3:GetObject"],
+              resources: [`${sourceBucket.bucketArn}/*`]
+            }),
+            new aws_iam.PolicyStatement({
+              effect: aws_iam.Effect.ALLOW,
+              actions: ["s3:ListBucket"],
+              resources: [sourceBucket.bucketArn]
             })
           ],
         })
@@ -69,16 +91,19 @@ export class UiComposerStack extends Stack {
         memoryLimitMiB: 2048,
         desiredCount: 3,
         cpu: 1024,
+        openListener: false,
+        listenerPort: 80,
         publicLoadBalancer: true,
         taskImageOptions:{
           image: ContainerImage.fromAsset(path.resolve(__dirname, '../')),
           taskRole: taskRole,
+          executionRole: taskRole,
           environment: {
             REGION: process.env.region || "eu-west-1"
           }
         },
       });
-
+    
       loadBalancedFargateService.targetGroup.configureHealthCheck({
         path: "/health",
       });
@@ -98,9 +123,8 @@ export class UiComposerStack extends Stack {
 
       // ----------------------------------------
 
-      // --------  CF and S3 for distribution and static assets ------------    
+      // --------  CF distro ------------    
 
-      const sourceBucket = new Bucket(this, 'mfe-static-assets');
       const oai = new OriginAccessIdentity(this, 'mfe-oai')
 
       const distribution = new CloudFrontWebDistribution(this, 'mfe-distro', {
@@ -131,13 +155,41 @@ export class UiComposerStack extends Stack {
                   cookies: {
                     forward: 'all'
                   },
-                  headers: ['*']
+                  headers: ['*'],
                 }
               }
           ]
           }
         ],
       });
+      
+      // ----------------------------------------
+
+      // --------  NAG suppression statements ------------ 
+      NagSuppressions.addResourceSuppressions(loadBalancedFargateService.loadBalancer, [
+        {id: 'AwsSolutions-ELB2', reason: 'It\'s a demo so no need to enable access logs'}
+      ])
+
+      NagSuppressions.addResourceSuppressions(loadBalancedFargateService.taskDefinition, [
+        {id: 'AwsSolutions-ECS2', reason: 'It\'s a demo'}
+      ])
+      
+      NagSuppressions.addStackSuppressions(this, [
+        {id: 'AwsSolutions-IAM5', reason: 'remediate with override inline policies'}
+      ])
+
+      NagSuppressions.addResourceSuppressions(distribution, [
+        { id: 'AwsSolutions-CFR5', reason: 'It\'s a demo so no need to enforce SSLv3 or TLSv1' },
+        { id: 'AwsSolutions-CFR4', reason: 'It\'s a demo so no need to enforce SSLv3 or TLSv1' },
+        { id: 'AwsSolutions-CFR3', reason: 'It\'s a demo so no need to have access logs' },
+        { id: 'AwsSolutions-CFR2', reason: 'It\'s a demo so no need to integrate WAF on the CloudFront Distribution' },
+        { id: 'AwsSolutions-CFR1', reason: 'It\'s a demo so no need to implement GEO restriction rules' },
+      ]);
+      
+      NagSuppressions.addResourceSuppressions(sourceBucket, [
+        { id: 'AwsSolutions-S3', reason: 'The bucket contains only HTML, JS or CSS files' },
+        { id: 'AwsSolutions-S1', reason: 'It\'s a demo so no need to enable access logs' },
+      ]);
 
   }
 }
