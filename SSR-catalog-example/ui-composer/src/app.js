@@ -9,19 +9,26 @@ const PORT = process.env.PORT || 3000;
 let MFElist, catalogTemplate
 
 const responseStream = (str, code, reply) => {
- 
-  reply.raw.writeHead(code, { 'Content-Type': 'text/html' })
+  
+  reply.header('Content-Type', 'application/octet-stream');
+  reply.raw.writeHead(code, { 'Content-Type': 'text/html' });
 
-  const stream = Readable.from([str])
+  const stream = Readable.from([str]);
  
   stream.on('data', chunk => {
-    reply.raw.write(chunk.toString())
+    reply.raw.write(chunk.toString());
   })
 
   stream.on('end', () => {
     reply.raw.end();
   })
 }
+
+fastify.get('/', async (request, reply) => {
+    reply.code(200).send({
+      message: "Welcome to the Micro-Frontends in AWS example"  
+    })
+})
 
 fastify.setErrorHandler(function (error, request, reply) {
     responseStream(serverErrorPage(), 500, reply)

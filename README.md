@@ -10,11 +10,23 @@ In this repository we collect examples to implement Micro-Frontends in AWS, leve
 
 ## Server-side rendering Micro-Frontends
 
-In this example we have created a basic example that leverages the building blocks to create a server-side rendering (SSR) micro-frontends implementation.
+In this repository we have created a basic example that leverages the building blocks to create a server-side rendering (SSR) micro-frontends implementation.
+
+The architecture characteristics we focus in these projects are:
+
+- being framework agnostic
+- using standards for communicating between micro-frontends and the UI composer using [HTML-over-the-wire](https://alistapart.com/article/the-future-of-web-software-is-html-over-websockets/)
+- using the best practices for SSR workloads such as [progressive hydration](https://www.patterns.dev/posts/progressive-hydration/) and [streaming to the browser](https://www.patterns.dev/posts/ssr/)
+- allowing teams to operate independently with little coordination for composing their micro-frontends inside a view
+- implementing best practices once a micro-frontend is hydrated using a pub/sub system for communication inside the browser
+- having the possibility to choose between client-side rendering and server-side rendering based on the needs
 
 The architecture in this example is represented in the following diagram:
 
 ![SSR micro-frontends](./images/diagram.png)
+
+
+
 
 ## Installation
 Please ensure you have the [AWS CLI](https://aws.amazon.com/cli) installed and configured with [credentials](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
