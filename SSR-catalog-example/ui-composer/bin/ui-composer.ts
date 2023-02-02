@@ -1,17 +1,15 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
 import { UiComposerStack } from '../lib/ui-composer-stack';
 import { AwsSolutionsChecks } from 'cdk-nag'
-import { Aspects } from 'aws-cdk-lib';
+import { Aspects, App, Tags, Stack } from 'aws-cdk-lib';
 
-const app = new cdk.App({
-  context:{
-    catalogArn: "/ssr-mfe/catalogARN",
-    reviewsArn: "/ssr-mfe/reviewsARN",
-    bucketArn: "/ssr-mfe/bucketARN"
-  }
-});
-
+const app = new App();
+const stack = new UiComposerStack(app, 'UiComposerStack');
+Tags.of(stack).add("webapp", "mfe")
+// Tags.of(stack).add("webapp", "mfe", { includeResourceTypes: [
+//   'AWS::ECS::Service',
+//   'AWS::ECS::TaskDefinition',
+//   'AWS::ECS::Cluster'
+// ]});
 Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }))
-new UiComposerStack(app, 'UiComposerStack', {});

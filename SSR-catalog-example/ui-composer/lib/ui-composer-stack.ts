@@ -1,7 +1,7 @@
 import { Stack, StackProps, aws_iam, CfnParameter, App } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
-import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
+import { Cluster, ContainerImage, PropagatedTagSource } from 'aws-cdk-lib/aws-ecs';
 import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination, Port } from "aws-cdk-lib/aws-ec2";
 import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
@@ -40,12 +40,6 @@ export class UiComposerStack extends Stack {
         destination: FlowLogDestination.toCloudWatchLogs(vpcLogGroup, role)
       });
 
-
-      // -------- PARAMETER STORE -------
-
-      const catalogARN = StringParameter.valueForStringParameter(this, this.node.tryGetContext('catalogArn'));
-      const reviewsARN = StringParameter.valueForStringParameter(this, this.node.tryGetContext('reviewsArn'));
-      
       // ----------------------------------------
 
       const taskRole = new aws_iam.Role(this, "fargate-task-role", {
@@ -55,7 +49,7 @@ export class UiComposerStack extends Stack {
       });
 
       taskRole.attachInlinePolicy(
-        new aws_iam.Policy(this, "task-policy", {
+        new aws_iam.Policy(this, "task-access-policy", {
           statements: [
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
@@ -64,32 +58,27 @@ export class UiComposerStack extends Stack {
             }),
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
-              actions: ["lambda:InvokeFunction"],
-              resources: [reviewsARN]
-            }),
-            new aws_iam.PolicyStatement({
-              effect: aws_iam.Effect.ALLOW,
-              actions: ["states:StartSyncExecution"],
-              resources: [catalogARN]
-            }),
-            new aws_iam.PolicyStatement({
-              effect: aws_iam.Effect.ALLOW,
-              actions: ["s3:GetObject"],
-              resources: [`${sourceBucket.bucketArn}/*`]
-            }),
-            new aws_iam.PolicyStatement({
-              effect: aws_iam.Effect.ALLOW,
-              actions: ["s3:ListBucket"],
-              resources: [sourceBucket.bucketArn]
+              actions: [
+                "lambda:InvokeFunction",
+                "states:StartSyncExecution",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              resources: ["*"],
+              conditions: {
+                  "StringEquals": {
+                    "aws:RequestedRegion": [process.env.region || "eu-west-1"]
+                  }
+              }
             })
           ],
         })
-      );
+      )
 
       const loadBalancedFargateService = new ApplicationLoadBalancedFargateService(this, 'ui-composer-service', {
         cluster,
         memoryLimitMiB: 2048,
-        desiredCount: 3,
+        desiredCount: 2,
         cpu: 1024,
         openListener: false,
         listenerPort: 80,
@@ -98,6 +87,7 @@ export class UiComposerStack extends Stack {
           image: ContainerImage.fromAsset(path.resolve(__dirname, '../')),
           taskRole: taskRole,
           executionRole: taskRole,
+          enableLogging: true,
           environment: {
             REGION: process.env.region || "eu-west-1"
           }

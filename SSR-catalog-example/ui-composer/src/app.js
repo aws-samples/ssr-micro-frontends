@@ -1,6 +1,6 @@
 const fastify = require('fastify')({ logger: true })
 const { Readable } = require('stream');
-const catalog = require("./templates/catalog");
+const catalogDetails = require("./templates/catalog");
 const init = require('./config');
 const { notFoundPage, serverErrorPage } = require('./templates/staticPages');
 const { loadFromS3 } = require("./utils/mfe-loader");
@@ -10,7 +10,6 @@ let MFElist, catalogTemplate
 
 const responseStream = (str, code, reply) => {
   
-  reply.header('Content-Type', 'application/octet-stream');
   reply.raw.writeHead(code, { 'Content-Type': 'text/html' });
 
   const stream = Readable.from([str]);
@@ -22,9 +21,10 @@ const responseStream = (str, code, reply) => {
   stream.on('end', () => {
     reply.raw.end();
   })
+
 }
 
-fastify.get('/', async (request, reply) => {
+fastify.get('/hello', async (request, reply) => {
     reply.code(200).send({
       message: "Welcome to the Micro-Frontends in AWS example"  
     })
@@ -46,10 +46,10 @@ fastify.get('/health', async(request, reply) => {
   reply.code(200).send({healthy: true})
 })
 
-fastify.get('/home', async(request, reply) => {
+fastify.get('/productdetails', async(request, reply) => {
   try{
-    const catalogpage = await catalog(MFElist, catalogTemplate)
-    responseStream(catalogpage, 200, reply)
+    const catalogDetailspage = await catalogDetails(MFElist, catalogTemplate)
+    responseStream(catalogDetailspage, 200, reply)
   } catch(err){
     console.log(err)
     throw new Error(err)
