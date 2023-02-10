@@ -17,7 +17,7 @@
     "@types/prettier": "2.6.0",
     "aws-cdk": "2.33.0",
     "aws-cdk-lib": "2.33.0",
-    "cdk-nag": "^2.16.4",
+    "cdk-nag": "^2.22.2",
     "jest": "^27.5.1",
     "source-map-support": "^0.5.21",
     "ts-jest": "^27.1.4",
@@ -25,17 +25,17 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.148.0",
-    "@aws-sdk/client-s3": "^3.150.0",
-    "@aws-sdk/client-sfn": "^3.150.0",
-    "@aws-sdk/client-ssm": "^3.138.0",
+    "@aws-sdk/client-lambda": "^3.267.0",
+    "@aws-sdk/client-s3": "^3.267.0",
+    "@aws-sdk/client-sfn": "^3.267.0",
+    "@aws-sdk/client-ssm": "^3.267.0",
     "axios": "^0.27.2",
-    "constructs": "^10.0.0",
+    "constructs": "^10.1.246",
     "es6-dynamic-template": "^2.0.0",
     "fastify": "^4.13.0",
     "htm": "^3.1.1",
     "node-html-parser": "^6.1.4",
     "ordered-read-streams": "^1.0.1",
-    "preact": "^10.10.0"
+    "preact": "^10.12.1"
   }
 }
