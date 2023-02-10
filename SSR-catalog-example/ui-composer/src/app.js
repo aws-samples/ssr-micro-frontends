@@ -1,6 +1,6 @@
 const fastify = require('fastify')({ logger: true })
 const { Readable } = require('stream');
-const catalogDetails = require("./templates/catalog");
+const {transformTemplate} = require('./utils/html-transformer');
 const init = require('./config');
 const { notFoundPage, serverErrorPage } = require('./templates/staticPages');
 const { loadFromS3 } = require("./utils/mfe-loader");
@@ -48,7 +48,7 @@ fastify.get('/health', async(request, reply) => {
 
 fastify.get('/productdetails', async(request, reply) => {
   try{
-    const catalogDetailspage = await catalogDetails(MFElist, catalogTemplate)
+    const catalogDetailspage = await transformTemplate(catalogTemplate)
     responseStream(catalogDetailspage, 200, reply)
   } catch(err){
     console.log(err)

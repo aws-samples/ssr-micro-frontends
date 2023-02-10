@@ -33,7 +33,7 @@
       <div id="noitificationscontainer">
         <script src="./static/notifications.js" defer></script>
       </div>
-            ${catalog}
-            ${review}
+        <mfe id="catalog" errorbehaviour="error" loader="stepfunction"/>
+        <mfe id="review" errorbehaviour="hide" loader="lambda"/>
     </body>
     </html>

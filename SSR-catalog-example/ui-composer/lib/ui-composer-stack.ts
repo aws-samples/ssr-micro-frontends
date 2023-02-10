@@ -1,11 +1,10 @@
-import { Stack, StackProps, aws_iam, CfnParameter, App } from 'aws-cdk-lib';
+import { Stack, StackProps, aws_iam, App } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
-import { Cluster, ContainerImage, PropagatedTagSource } from 'aws-cdk-lib/aws-ecs';
-import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination, Port } from "aws-cdk-lib/aws-ec2";
+import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
+import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination } from "aws-cdk-lib/aws-ec2";
 import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
-import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
 
 import * as path from 'path';
@@ -20,7 +19,7 @@ export class UiComposerStack extends Stack {
         enforceSSL: true
       });
 
-      // --------  UI-COMPOSER-MICROSERVICE ------------  
+      // --------  UI-COMPOSER-NETWORKING ------------  
       const vpc = new Vpc(this, "ui-composer-vpc", {
         maxAzs: 3
       });
@@ -42,6 +41,8 @@ export class UiComposerStack extends Stack {
 
       // ----------------------------------------
 
+      // --------  UI-COMPOSER- ------------  
+
       const taskRole = new aws_iam.Role(this, "fargate-task-role", {
         assumedBy: new aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
         roleName: "fargate-task-role",
@@ -53,7 +54,10 @@ export class UiComposerStack extends Stack {
           statements: [
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
-              actions: ["ssm:GetParameter"],
+              actions: [
+                "ssm:GetParameter",
+                "ssm:GetParameters"
+              ],
               resources: ["*"]
             }),
             new aws_iam.PolicyStatement({
@@ -79,10 +83,12 @@ export class UiComposerStack extends Stack {
         cluster,
         memoryLimitMiB: 2048,
         desiredCount: 2,
-        cpu: 1024,
-        openListener: false,
+        cpu: 512,
         listenerPort: 80,
         publicLoadBalancer: true,
+        circuitBreaker: {
+          rollback: true,
+        },
         taskImageOptions:{
           image: ContainerImage.fromAsset(path.resolve(__dirname, '../')),
           taskRole: taskRole,
@@ -156,15 +162,17 @@ export class UiComposerStack extends Stack {
       // ----------------------------------------
 
       // --------  NAG suppression statements ------------ 
+
       NagSuppressions.addResourceSuppressions(loadBalancedFargateService.loadBalancer, [
-        {id: 'AwsSolutions-ELB2', reason: 'It\'s a demo so no need to enable access logs'}
+        {id: 'AwsSolutions-ELB2', reason: 'It\'s a demo so no need to enable access logs'},
       ])
 
       NagSuppressions.addResourceSuppressions(loadBalancedFargateService.taskDefinition, [
-        {id: 'AwsSolutions-ECS2', reason: 'It\'s a demo'}
+        {id: 'AwsSolutions-ECS2', reason: 'It\'s a demo'},
       ])
       
       NagSuppressions.addStackSuppressions(this, [
+        {id: 'AwsSolutions-EC23', reason: 'It\'s a demo so IPV4 inbound traffic from anywhere'},
         {id: 'AwsSolutions-IAM5', reason: 'remediate with override inline policies'}
       ])
 

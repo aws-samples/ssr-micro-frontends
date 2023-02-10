@@ -1,4 +1,4 @@
-const ERROR = "500error";
+const ERROR = "error";
 const HIDE = "hide";
 
 module.exports = {

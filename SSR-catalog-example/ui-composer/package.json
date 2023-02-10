@@ -32,8 +32,9 @@
     "axios": "^0.27.2",
     "constructs": "^10.0.0",
     "es6-dynamic-template": "^2.0.0",
-    "fastify": "^4.5.3",
+    "fastify": "^4.13.0",
     "htm": "^3.1.1",
+    "node-html-parser": "^6.1.4",
     "ordered-read-streams": "^1.0.1",
     "preact": "^10.10.0"
   }
