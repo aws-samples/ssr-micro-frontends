@@ -100,6 +100,8 @@ const transformTemplate = async (html) => {
                     )
                 )
             });
+        } else {
+            return ""
         }
 
         // retrieve service to call in Parameter Store
@@ -125,8 +127,6 @@ const transformTemplate = async (html) => {
     }
 
 }
-
-
 
 module.exports = {
     transformTemplate
