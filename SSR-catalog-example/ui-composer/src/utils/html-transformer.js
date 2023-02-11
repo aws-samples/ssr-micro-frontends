@@ -11,6 +11,13 @@ const LAMBDA = "lambda";
 const URL = "url";
 
 const getMfeVO = (id, errorBehaviour, loader) => {
+
+    if(!id || !loader)
+        throw new Error("MFE tag not configured correctly, ID and loader must be defined")
+
+    if(!errorBehaviour)
+        errorBehaviour = behaviour.HIDE;
+
     const ssmKey = `/${APP}/${id}${ARN}`;
     let chosenLoader;
 
