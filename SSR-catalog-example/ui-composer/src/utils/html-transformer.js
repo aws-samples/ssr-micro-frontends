@@ -45,7 +45,7 @@ const getMfeVO = (id, errorBehaviour, loader) => {
 }
 
 const getMfeElements = (root) => {
-    return root.querySelectorAll("mfe") || [];
+    return root.querySelectorAll("micro-frontend") || [];
 }
 
 const analyseMFEresponse = (response, behaviour) => {
