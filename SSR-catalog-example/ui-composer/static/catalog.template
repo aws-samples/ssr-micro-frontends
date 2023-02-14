@@ -28,7 +28,7 @@
     </head>
     <body>
       <header>
-        <i class="logo fa-brands fa-aws"></i>
+        <i class="fa-solid fa-cart-shopping"></i>
       </header>
       <div id="noitificationscontainer">
         <script src="./static/notifications.js" defer></script>
