@@ -1,8 +1,11 @@
 FROM node:19-alpine
 
-ENV PORT=80
+RUN adduser -D -u 1001 noroot
+RUN su noroot
 
 COPY ./ ./
+
+ENV PORT=80
 
 RUN npm ci
 
