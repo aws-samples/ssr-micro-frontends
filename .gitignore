@@ -1,7 +1,4 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/osx,node,linux,windows,sam
-# Edit at https://www.toptal.com/developers/gitignore?templates=osx,node,linux,windows,sam
-
 !jest.config.js
 *.d.ts
 node_modules
@@ -187,6 +184,8 @@ Temporary Items
 # Docs: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-reference.html
 
 **/.aws-sam
+**/*.toml
+*.toml
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -213,5 +212,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-# End of https://www.toptal.com/developers/gitignore/api/osx,node,linux,windows,sam
