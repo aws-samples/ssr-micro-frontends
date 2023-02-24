@@ -185,7 +185,7 @@ Temporary Items
 
 **/.aws-sam
 **/*.toml
-*.toml
+*.tomle
 
 ### Windows ###
 # Windows thumbnail cache files
