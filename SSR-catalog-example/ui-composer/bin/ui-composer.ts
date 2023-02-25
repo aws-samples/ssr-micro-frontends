@@ -5,6 +5,8 @@ import { AwsSolutionsChecks } from 'cdk-nag'
 import { Aspects, App, Stack } from 'aws-cdk-lib';
 
 const app = new App();
-const stack = new UiComposerStack(app, 'UiComposerStack');
+const stack = new UiComposerStack(app, 'UiComposerStack',{
+    env: { region: 'eu-west-1' }
+});
 
 Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }))

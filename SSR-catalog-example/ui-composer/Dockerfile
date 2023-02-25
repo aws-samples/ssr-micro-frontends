@@ -1,11 +1,9 @@
-FROM node:19-alpine
-
-RUN adduser -D -u 1001 noroot
-RUN su noroot
+FROM node:19-bullseye-slim
 
 COPY ./ ./
 
 ENV PORT=80
+ENV NODE_ENV="production"
 
 RUN npm ci
 
