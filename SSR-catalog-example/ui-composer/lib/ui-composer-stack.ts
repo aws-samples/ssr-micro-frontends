@@ -9,6 +9,7 @@ import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patte
 
 import * as path from 'path';
 import { NagSuppressions } from 'cdk-nag';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export class UiComposerStack extends Stack {
   constructor(scope: App, id: string, props?: StackProps) {
@@ -50,8 +51,16 @@ export class UiComposerStack extends Stack {
       });
 
       // ----------------------------------------
+      
+      // --------  SSM Parameter Store ----------  
 
-      // --------  UI-COMPOSER- ------------  
+      new StringParameter(this, 'ui-composer-params', {
+        parameterName: '/ssr-mfe/catalogpage',
+        description: "template config for UI-composer",
+        stringValue: `{"template": "templates/catalog.template", "templatesBucket": "${sourceBucket.bucketName}"}`,
+      });
+
+      // --------  UI-COMPOSER -------------  
 
       const taskRole = new aws_iam.Role(this, "fargate-task-role", {
         assumedBy: new aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),

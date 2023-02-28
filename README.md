@@ -99,9 +99,3 @@ The ```static``` folder should look like this screenshot now:
 We now need to create a new folder in the S3 bucket called ```templates``` and upload the file used as HTML template for rendering the final page. Upload ```SSR-catalog-example/ui-composer/static/catalog.template``` in the ```templates``` folder.
 
 ![templates folder in S3 bucket](./images/s3-templates-folder.png)
-
-Last step is creating a parameter in System Manager Parameter Store called ```/ssr-mfe/catalogpage``` type ```text``` with the following value:
-
-```json
-{"template": "templates/catalog.template", "templatesBucket": "add S3 bucket ARN"}
-```
