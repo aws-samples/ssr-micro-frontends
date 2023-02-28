@@ -60,12 +60,12 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref DynamoTable
-      Events:
-        ReviewsGateway:
-          Type: Api
-          Properties:
-            Path: /
-            Method: get
+  ServiceDiscoveryID:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /ssr-mfe/reviewARN
+      Type: String
+      Value: !Ref ReviewsMFEFunction
 
 Outputs:
   ReviewsGatewayApi:

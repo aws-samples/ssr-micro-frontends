@@ -71,83 +71,9 @@ Resources:
       CodeUri: functions/product
       Handler: server-build/app.lambdaHandler
   
-  ApiGatewayStepFunctionsRole:
-    Type: AWS::IAM::Role
+  ServiceDiscoveryID:
+    Type: AWS::SSM::Parameter
     Properties:
-      Path: !Join ["", ["/", !Ref "AWS::StackName", "/"]]
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Sid: AllowApiGatewayServiceToAssumeRole
-            Effect: Allow
-            Action:
-              - 'sts:AssumeRole'
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
-      Policies:
-        - PolicyName: CallStepFunctions
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'states:StartSyncExecution'
-                Resource:
-                  - !Ref ProductStateMachine
-  
-  CatalogGateway:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      Name: !Sub ${AWS::StackName}
-
-  CatalogGatewayRootMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: NONE
-      HttpMethod: GET
-      MethodResponses:
-        - StatusCode: '200'
-          ResponseParameters:
-              method.response.header.Access-Control-Allow-Origin: true
-              method.response.header.Access-Control-Allow-Methods: true
-              method.response.header.Access-Control-Allow-Headers: true
-          ResponseModels:
-            text/html: Empty
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS
-        Credentials: !GetAtt ApiGatewayStepFunctionsRole.Arn 
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:states:action/StartSyncExecution
-        PassthroughBehavior: WHEN_NO_TEMPLATES
-        RequestTemplates: 
-          application/json: !Sub 
-            - |-
-              {
-                "stateMachineArn": "${StateMachineArn}"
-              }
-            - { StateMachineArn: !Ref ProductStateMachine }
-        IntegrationResponses:
-          - StatusCode: '200'
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Headers : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Methods : "'POST,GET,OPTIONS'"
-              method.response.header.Access-Control-Allow-Origin : "'*'"
-            ResponseTemplates:
-              text/html: "#set($html = $input.path('$.output'))\n$util.parseJson($html)"
-              # text/html: "#set($html = $input.path('$.output'))\n#set($context.responseOverride.header.Cache-Control = 'public, max-age=10')\n$util.parseJson($html)"
-      ResourceId: !GetAtt CatalogGateway.RootResourceId
-      RestApiId: !Ref CatalogGateway
-  
-  CatalogGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-      - CatalogGatewayRootMethod
-    Properties:
-      RestApiId: !Ref CatalogGateway
-      StageName: 'Prod'
-      StageDescription:
-        TracingEnabled: true
+      Name: /ssr-mfe/catalogARN
+      Type: String
+      Value: !Ref ProductStateMachine

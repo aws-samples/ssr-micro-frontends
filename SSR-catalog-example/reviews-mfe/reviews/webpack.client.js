@@ -1,5 +1,4 @@
 const path = require("path");
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
     entry: "./src/Client.js",
@@ -18,8 +17,5 @@ module.exports = {
                 loader: "babel-loader",
             }
         ]
-    },
-    // plugins: [
-    //     new BundleAnalyzerPlugin()
-    // ]
+    }
 };

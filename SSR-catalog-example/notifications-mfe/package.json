@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "webpack --mode=production"
+    "build-client": "webpack --mode=production"
   },
   "devDependencies": {
     "@babel/core": "^7.18.9",

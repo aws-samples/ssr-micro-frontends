@@ -14,7 +14,6 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "test": "mocha tests/unit/",
     "build-server": "webpack --config webpack.server.js --mode=production",
     "build-client": "webpack --config webpack.client.js --mode=production"
   },
