@@ -1,7 +1,6 @@
 const path = require("path");
 
 module.exports = {
-  watch: true,
   entry: "./app.js",
   target: "node",
   output: {

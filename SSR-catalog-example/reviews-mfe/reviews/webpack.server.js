@@ -1,7 +1,6 @@
 const path = require("path");
 
 module.exports = {
-  watch: true,
   entry: "./GET_Reviews.js",
   target: "node",
   output: {

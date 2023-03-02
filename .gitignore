@@ -7,6 +7,9 @@ node_modules
 .cdk.staging
 cdk.out
 
+### build ###
+client-build
+server-build
 
 ### Linux ###
 *~
@@ -185,7 +188,7 @@ Temporary Items
 
 **/.aws-sam
 **/*.toml
-*.tomle
+*.toml
 
 ### Windows ###
 # Windows thumbnail cache files

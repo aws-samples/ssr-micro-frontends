@@ -34,15 +34,23 @@ You can read an extensive description of this approach in this blog series:
 
 More posts are written as we speak so keep an eye on the [AWS Compute Blog](link).
 
+### Pre-requisites
+
+- [Node.js](https://nodejs.org/en/download/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [AWS CLI](https://aws.amazon.com/cli/)
+- [AWS SAM](https://aws.amazon.com/serverless/sam/)
+- [AWS CDK](https://aws.amazon.com/cdk/)
+
 ### How to deploy this project
 
-We assume you have installed and configured the [AWS CLI](https://aws.amazon.com/cli/), if not please follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions)
+We assume you have installed and configured the AWS CLI, if not please follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions)
 
 As seen in the diagram above, the system is composed by different parts.
 The first thing to do is deploying the UI composer alongside the CloudFront distribution and related S3 bucket.
 
 In the ```SSR-catalog-example/ui-composer``` we have the implementation and configuration of these parts of the system.
-For this project we are using [AWS CDK](https://aws.amazon.com/cdk/), so follow the [instructions](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) to install in your machine and then run the commands inside the ```SSR-catalog-example/ui-composer``` folder:
+For this project we are using AWS CDK, so follow the [instructions](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) to install in your machine and then run the commands inside the ```SSR-catalog-example/ui-composer``` folder:
 
 ```shell
 npm install
@@ -67,12 +75,12 @@ Now, we can deploy the micro-frontends: two of them are using the server-side re
 ```reviews-mfe``` and ```catalog-mfe``` are similar in terms of deployment approach.
 First install the Node.js dependecies running the command ```node install``` in both projects.
 
-These server-side rendering micro-frontends use [AWS SAM](https://aws.amazon.com/serverless/sam/) as IaC tool, so first you need to follow the instructions to [install AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) and then run the following commands inside the folder of both projects:
+These server-side rendering micro-frontends use AWS SAM as IaC tool, so first you need to follow the instructions to [install AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) and then run the following commands inside the folder of both projects:
 
 ```shell
 npm install
 # this command minimize the code of the lambda function(s)
-npm run server-build
+npm run build-server
 # this command build the project using SAM
 sam build
 # this command triggers a wizard for deploying a micro-frontend in the AWS account
