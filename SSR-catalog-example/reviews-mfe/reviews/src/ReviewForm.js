@@ -20,7 +20,7 @@ class Form extends Component {
         }
 
         const res = await fetch(
-            'https://aq621ipn63.execute-api.eu-west-1.amazonaws.com/Prod/review',
+            'URL',
             {
                 method: "POST",
                 body: JSON.stringify(body),

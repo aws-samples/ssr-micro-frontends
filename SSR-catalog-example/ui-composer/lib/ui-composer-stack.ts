@@ -2,7 +2,7 @@ import { Stack, StackProps, aws_iam, App } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
-import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination } from "aws-cdk-lib/aws-ec2";
+import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination, CfnPrefixList } from "aws-cdk-lib/aws-ec2";
 import { AccountRootPrincipal, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
@@ -49,7 +49,7 @@ export class UiComposerStack extends Stack {
         resourceType: FlowLogResourceType.fromVpc(vpc),
         destination: FlowLogDestination.toCloudWatchLogs(vpcLogGroup, role)
       });
-
+      
       // ----------------------------------------
       
       // --------  SSM Parameter Store ----------  
@@ -87,12 +87,10 @@ export class UiComposerStack extends Stack {
                 "lambda:InvokeFunction",
                 "states:StartSyncExecution"
               ],
-              resources: ["*"],
-              conditions: {
-                  "StringEquals": {
-                    "aws:RequestedRegion": [process.env.region || "eu-west-1"]
-                  }
-              }
+              resources: [
+                `arn:aws:lambda:${process.env.region || "eu-west-1"}:${account.accountId}:function:*`,
+                `arn:aws:states:${process.env.region || "eu-west-1"}:${account.accountId}:stateMachine:*`
+              ]
             }),
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
@@ -100,7 +98,10 @@ export class UiComposerStack extends Stack {
                 "s3:GetObject",
                 "s3:ListBucket"
               ],
-              resources: [sourceBucket.bucketArn],
+              resources: [
+                sourceBucket.bucketArn,
+                `${sourceBucket.bucketArn}/*`
+              ],
             })
           ],
         })
@@ -134,8 +135,8 @@ export class UiComposerStack extends Stack {
       });
       
       const scalableTarget = loadBalancedFargateService.service.autoScaleTaskCount({
-        minCapacity: 3,
-        maxCapacity: 4,
+        minCapacity: 1,
+        maxCapacity: 3,
       });
       
       scalableTarget.scaleOnCpuUtilization('CpuScaling', {
