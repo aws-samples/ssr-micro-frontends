@@ -2,6 +2,8 @@ const { html, Component } = require('htm/preact');
 const fetch = require('cross-fetch');
 const {v4: uuidv4} = require("uuid");
 
+const REVIEW_URL = "https://xxxxxxxx.execute-api.REGION.amazonaws.com/Prod/review"; // set the endpoint for posting a new review in the interface
+
 class Form extends Component {
     state = {}
 
@@ -20,7 +22,7 @@ class Form extends Component {
         }
 
         const res = await fetch(
-            'URL',
+            REVIEW_URL,
             {
                 method: "POST",
                 body: JSON.stringify(body),

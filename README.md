@@ -107,3 +107,21 @@ The ```static``` folder should look like this screenshot now:
 We now need to create a new folder in the S3 bucket called ```templates``` and upload the file used as HTML template for rendering the final page. Upload ```SSR-catalog-example/ui-composer/static/catalog.template``` in the ```templates``` folder.
 
 ![templates folder in S3 bucket](./images/s3-templates-folder.png)
+
+### Set endpoint for reviews service
+
+After provisioning the reviews micro-frontend in the AWS account, you get an open endpoint used only for demo purposes. We encourage you to use the decided authentication model for you project adding a Lambda authorizer or similar mechanism.
+
+Get the API Gateway URL from  AWS console or from the provisioning output of SAM CLI and add it to ```ReviewForm.js``` (it's inside the ```reviews-mfe``` folder) in the ```URL``` constant.
+
+![API GW console](./images/apigw.png)
+
+The endpoint created is called ```review``` and is in the ```Prod``` stage.
+
+The final endpoint should look like this one:
+
+```shell
+https://xxxxxxxx.execute-api.REGION.amazonaws.com/Prod/review
+```
+
+After this, you can run ```npm run build-client``` and upload the file in the S3 bucket inside the ```static``` folder.
