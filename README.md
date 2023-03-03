@@ -125,3 +125,15 @@ https://xxxxxxxx.execute-api.REGION.amazonaws.com/Prod/review
 ```
 
 After this, you can run ```npm run build-client``` and upload the file in the S3 bucket inside the ```static``` folder.
+
+### Deleting the Solution
+
+To delete the projects via AWS Console:
+
+1. Open the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home) Page and choose a stack, then choose _"Delete"_
+2. Once the confirmation modal appears, choose _"Delete stack"_.
+3. Wait for the CloudFormation stack to finish updating. Completion is indicated when the _"Stack status"_ is _"DELETE_COMPLETE"_
+
+Remember to follow these steps for the UI composer and every micro-frontend stack created.
+
+To delete a stack via the AWS CLI consult [the documentation](https://docs.aws.amazon.com/cli/latest/reference/cloudformation/delete-stack.html).

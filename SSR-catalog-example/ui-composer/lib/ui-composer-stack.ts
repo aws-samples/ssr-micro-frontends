@@ -1,4 +1,4 @@
-import { Stack, StackProps, aws_iam, App } from 'aws-cdk-lib';
+import { Stack, StackProps, aws_iam, App, RemovalPolicy } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
@@ -19,7 +19,8 @@ export class UiComposerStack extends Stack {
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
         enforceSSL: true,
         serverAccessLogsPrefix: "s3-logs",
-        encryption: BucketEncryption.S3_MANAGED
+        encryption: BucketEncryption.S3_MANAGED,
+        removalPolicy: RemovalPolicy.DESTROY
       });
       
       const sourceBucket = new Bucket(this, 'mfe-static-assets', {
@@ -27,7 +28,8 @@ export class UiComposerStack extends Stack {
         enforceSSL: true,
         serverAccessLogsBucket: accesslogsBucket,
         serverAccessLogsPrefix: "s3-logs",
-        encryption: BucketEncryption.S3_MANAGED
+        encryption: BucketEncryption.S3_MANAGED,
+        removalPolicy: RemovalPolicy.DESTROY
       });
 
       // --------  UI-COMPOSER-NETWORKING ------------  
@@ -49,7 +51,7 @@ export class UiComposerStack extends Stack {
         resourceType: FlowLogResourceType.fromVpc(vpc),
         destination: FlowLogDestination.toCloudWatchLogs(vpcLogGroup, role)
       });
-      
+
       // ----------------------------------------
       
       // --------  SSM Parameter Store ----------  
