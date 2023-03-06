@@ -17,7 +17,7 @@ let reviews, response
 exports.lambdaHandler = async (event, context) => {
   try {
     reviews = await ddbDocClient.scan(readAllParams)
-      console.log(reviews)
+
     const reviewsMFE = render(html`<${Reviews} data="${reviews.Items}" />`)
     response = {
         statusCode: 200,
