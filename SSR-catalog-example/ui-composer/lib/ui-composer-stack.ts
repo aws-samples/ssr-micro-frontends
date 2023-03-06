@@ -2,7 +2,7 @@ import { Stack, StackProps, aws_iam, App, RemovalPolicy } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
-import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination, CfnPrefixList } from "aws-cdk-lib/aws-ec2";
+import { Vpc, FlowLog, FlowLogResourceType, FlowLogDestination, CfnPrefixList, SecurityGroup, Port, Peer } from "aws-cdk-lib/aws-ec2";
 import { AccountRootPrincipal, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
@@ -51,6 +51,18 @@ export class UiComposerStack extends Stack {
         resourceType: FlowLogResourceType.fromVpc(vpc),
         destination: FlowLogDestination.toCloudWatchLogs(vpcLogGroup, role)
       });
+
+      const uiComposerSG = new SecurityGroup(this, 'ui-composer-sg', {
+        vpc: vpc,
+        allowAllOutbound: true,
+        description: 'ui-composer-sg'
+      })
+
+      const PREFIX_GLOBAL_CF_EU_WEST_1 = "pl-4fa04526";
+
+      uiComposerSG.addIngressRule(Peer.prefixList(PREFIX_GLOBAL_CF_EU_WEST_1), Port.tcp(80), 'allow ingress from ui-composer-sg')
+
+      // --------  UI-COMPOSER-FARGATE ------------
 
       // ----------------------------------------
       
@@ -116,6 +128,8 @@ export class UiComposerStack extends Stack {
         cpu: 512,
         listenerPort: 80,
         publicLoadBalancer: true,
+        securityGroups: [uiComposerSG],
+        serviceName: "ui-composer-service",
         circuitBreaker: {
           rollback: true,
         },
@@ -131,7 +145,7 @@ export class UiComposerStack extends Stack {
       });
 
       loadBalancedFargateService.loadBalancer.logAccessLogs(accesslogsBucket, "alb-logs");
-    
+
       loadBalancedFargateService.targetGroup.configureHealthCheck({
         path: "/health",
       });
