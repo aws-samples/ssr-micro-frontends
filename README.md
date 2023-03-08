@@ -132,7 +132,8 @@ After this, you can run ```npm run build-client``` and upload the file in the S3
 ### Loading the website in a browser
 
 At the end of the deployment, you can see from the CloudFormation dashboard in the output panel the URL to paste in a browser for seeing the final solution.
-If you are deploying the solution from your laptop, in the Outputs you can find the endpoint to paste in a browser.
+
+If you are deploying the solution from your laptop, in the CLI Outputs you can find the endpoint to paste in a browser (```UiComposerStack.distributionDomainName```).
 
 ### Deleting the Solution
 
