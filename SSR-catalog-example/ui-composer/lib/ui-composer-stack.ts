@@ -1,4 +1,4 @@
-import { Stack, StackProps, aws_iam, App, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
+import {Stack, StackProps, aws_iam, App, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
@@ -14,15 +14,10 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 export class UiComposerStack extends Stack {
   constructor(scope: App, id: string, props?: StackProps) {
     super(scope, id, props);
-      // --------  S3 Buckets ------------  
-      const accesslogsBucket = new Bucket(this, 'access-logs', {
-        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-        enforceSSL: true,
-        serverAccessLogsPrefix: "s3-logs",
-        encryption: BucketEncryption.S3_MANAGED,
-        removalPolicy: RemovalPolicy.DESTROY
-      });
-      
+      // --------  S3 Buckets ------------
+      const accesslogsBucket = process.env.ACCESS_LOGS_BUCKET
+          ? Bucket.fromBucketName(this, "access-logs-bucket", process.env.ACCESS_LOGS_BUCKET)
+          : undefined;
       const sourceBucket = new Bucket(this, 'mfe-static-assets', {
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
         enforceSSL: true,
@@ -57,10 +52,6 @@ export class UiComposerStack extends Stack {
         allowAllOutbound: true,
         description: 'ui-composer-sg'
       })
-
-      const PREFIX_GLOBAL_CF_EU_WEST_1 = "pl-4fa04526";
-
-      uiComposerSG.addIngressRule(Peer.prefixList(PREFIX_GLOBAL_CF_EU_WEST_1), Port.tcp(80), 'allow ingress from ui-composer-sg')
 
       // --------  UI-COMPOSER-FARGATE ------------
 
@@ -128,6 +119,7 @@ export class UiComposerStack extends Stack {
         cpu: 512,
         listenerPort: 80,
         publicLoadBalancer: true,
+        openListener: false,
         securityGroups: [uiComposerSG],
         serviceName: "ui-composer-service",
         circuitBreaker: {
@@ -144,7 +136,19 @@ export class UiComposerStack extends Stack {
         },
       });
 
-      loadBalancedFargateService.loadBalancer.logAccessLogs(accesslogsBucket, "alb-logs");
+      const albSG = new SecurityGroup(this, 'alb-sg', {
+        vpc: vpc,
+        allowAllOutbound: true,
+        description: 'alb-sg'
+      })
+
+      const PREFIX_GLOBAL_CF_EU_WEST_1 = "pl-4fa04526";
+      albSG.addIngressRule(Peer.prefixList(PREFIX_GLOBAL_CF_EU_WEST_1), Port.tcp(80), 'allow ingress from CF')
+      loadBalancedFargateService.loadBalancer.addSecurityGroup(albSG)
+
+      if (accesslogsBucket !== undefined) {
+        loadBalancedFargateService.loadBalancer.logAccessLogs(accesslogsBucket as Bucket, "alb-logs");
+      }
 
       loadBalancedFargateService.targetGroup.configureHealthCheck({
         path: "/health",
@@ -168,10 +172,19 @@ export class UiComposerStack extends Stack {
       // --------  CF distro ------------    
 
       const oai = new OriginAccessIdentity(this, 'mfe-oai')
+      let loggingConfiguration;
+      if (accesslogsBucket !== undefined) {
+        loggingConfiguration = {
+          bucket: accesslogsBucket,
+          includeCookies: false,
+        };
+      }
 
       const distribution = new CloudFrontWebDistribution(this, 'mfe-distro', {
+        loggingConfig: loggingConfiguration,
         originConfigs: [
           {
+
             s3OriginSource: {
               s3BucketSource: sourceBucket,
               originAccessIdentity: oai
@@ -213,14 +226,14 @@ export class UiComposerStack extends Stack {
           exportName: 'website-url'
       });
 
-      // --------  NAG suppression statements ------------ 
+      // --------  NAG suppression statements ------------
 
       NagSuppressions.addResourceSuppressions(loadBalancedFargateService.taskDefinition, [
         {id: 'AwsSolutions-ECS2', reason: 'It\'s a demo'},
       ])
       
       NagSuppressions.addStackSuppressions(this, [
-        {id: 'AwsSolutions-EC23', reason: 'It\'s a demo so IPV4 inbound traffic from anywhere'},
+        {id: 'AwsSolutions-ELB2', reason: 'It\'s a demo so access logs are opt-in using the ACCESS_LOGS_BUCKET env var' },
         {id: 'AwsSolutions-IAM5', reason: 'remediate with override inline policies'}
       ])
 

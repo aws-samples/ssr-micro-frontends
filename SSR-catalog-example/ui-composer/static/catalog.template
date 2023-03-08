@@ -18,8 +18,9 @@
         }
         header {
           width: 100%;
-          height: 40px;
-          background-color: grey
+          padding: 5px;
+          height: 30px;
+          background-color: #D3D3D3;
         } 
       </style>
       <meta charset="UTF-8">
@@ -28,7 +29,7 @@
     </head>
     <body>
       <header>
-        <i class="fa-solid fa-cart-shopping"></i>
+        <i class="fa-regular fa-credit-card"></i>
       </header>
       <div id="noitificationscontainer">
         <script src="./static/notifications.js" defer></script>

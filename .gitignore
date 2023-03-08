@@ -215,3 +215,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Other IDE settings
+.idea/

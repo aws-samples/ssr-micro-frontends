@@ -113,7 +113,7 @@ We now need to create a new folder in the S3 bucket called ```templates``` and u
 After provisioning the reviews micro-frontend in the AWS account, you get an open endpoint used only for demo purposes.
 
 **IMPORTANT**: This endpoint has no associated authorizers and is therefore is public.
-In a real world application, some form of authentication authentication should be used e.g. Cognito User Pools or a Lambda authorizer.
+In a real world application, some form of authentication authentication should be used e.g. Cognito User Pools, AWS IAM or a Lambda authorizer.
 
 Get the API Gateway URL from  AWS console or from the provisioning output of SAM CLI and add it to ```ReviewForm.js``` (it's inside the ```reviews-mfe``` folder) in the ```URL``` constant.
 
@@ -137,9 +137,9 @@ If you are deploying the solution from your laptop, in the CLI Outputs you can f
 
 ### Deleting the Solution
 
-To delete the projects via AWS Console:
+To delete the micro-frontend stacks and UI Composer stacks via AWS Console:
 
-1. Open the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home) Page and choose a stack, then choose _"Delete"_
+1. Open the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home) page and choose the relevant stack, then choose _"Delete"_
 2. Once the confirmation modal appears, choose _"Delete stack"_.
 3. Wait for the CloudFormation stack to finish updating. Completion is indicated when the _"Stack status"_ is _"DELETE_COMPLETE"_
 
