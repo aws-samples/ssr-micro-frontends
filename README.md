@@ -110,7 +110,10 @@ We now need to create a new folder in the S3 bucket called ```templates``` and u
 
 ### Set endpoint for reviews service
 
-After provisioning the reviews micro-frontend in the AWS account, you get an open endpoint used only for demo purposes. We encourage you to use the decided authentication model for you project adding a Lambda authorizer or similar mechanism.
+After provisioning the reviews micro-frontend in the AWS account, you get an open endpoint used only for demo purposes.
+
+**IMPORTANT**: This endpoint has no associated authorizers and is therefore is public.
+In a real world application, some form of authentication authentication should be used e.g. Cognito User Pools or a Lambda authorizer.
 
 Get the API Gateway URL from  AWS console or from the provisioning output of SAM CLI and add it to ```ReviewForm.js``` (it's inside the ```reviews-mfe``` folder) in the ```URL``` constant.
 
@@ -125,6 +128,11 @@ https://xxxxxxxx.execute-api.REGION.amazonaws.com/Prod/review
 ```
 
 After this, you can run ```npm run build-client``` and upload the file in the S3 bucket inside the ```static``` folder.
+
+### Loading the website in a browser
+
+At the end of the deployment, you can see from the CloudFormation dashboard in the output panel the URL to paste in a browser for seeing the final solution.
+If you are deploying the solution from your laptop, in the Outputs you can find the endpoint to paste in a browser.
 
 ### Deleting the Solution
 

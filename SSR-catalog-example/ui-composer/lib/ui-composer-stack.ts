@@ -1,4 +1,4 @@
-import { Stack, StackProps, aws_iam, App, RemovalPolicy } from 'aws-cdk-lib';
+import { Stack, StackProps, aws_iam, App, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { CloudFrontWebDistribution, OriginAccessIdentity, CloudFrontAllowedMethods, CloudFrontAllowedCachedMethods, OriginProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { Bucket, BlockPublicAccess, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Cluster, ContainerImage } from 'aws-cdk-lib/aws-ecs';
@@ -206,6 +206,12 @@ export class UiComposerStack extends Stack {
       });
       
       // ----------------------------------------
+
+      new CfnOutput(this, 'distributionDomainName', {
+          value: `https://${distribution.distributionDomainName}/productdetails`,
+          description: 'the URL to access the website in a browser',
+          exportName: 'website-url'
+      });
 
       // --------  NAG suppression statements ------------ 
 
