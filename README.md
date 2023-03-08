@@ -136,9 +136,9 @@ If you are deploying the solution from your laptop, in the Outputs you can find 
 
 ### Deleting the Solution
 
-To delete the projects via AWS Console:
+To delete the micro-frontend stacks and UI Composer stacks via AWS Console:
 
-1. Open the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home) Page and choose a stack, then choose _"Delete"_
+1. Open the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/home) page and choose the relevant stack, then choose _"Delete"_
 2. Once the confirmation modal appears, choose _"Delete stack"_.
 3. Wait for the CloudFormation stack to finish updating. Completion is indicated when the _"Stack status"_ is _"DELETE_COMPLETE"_
 
