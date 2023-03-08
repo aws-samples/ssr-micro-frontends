@@ -73,7 +73,7 @@ At the end of the deployment we should have in our AWS account the following ele
 Now, we can deploy the micro-frontends: two of them are using the server-side rendering  (```reviews-mfe``` and ```catalog-mfe```) approach and another one is leveraging client-side rendering (```notifications-mfe```).
 
 ```reviews-mfe``` and ```catalog-mfe``` are similar in terms of deployment approach.
-First install the Node.js dependecies running the command ```node install``` in both projects.
+First install the Node.js dependecies running the command ```npm install``` in both projects.
 
 These server-side rendering micro-frontends use AWS SAM as IaC tool, so first you need to follow the instructions to [install AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) and then run the following commands inside the folder of both projects:
 
