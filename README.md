@@ -113,7 +113,7 @@ We now need to create a new folder in the S3 bucket called ```templates``` and u
 After provisioning the reviews micro-frontend in the AWS account, you get an open endpoint used only for demo purposes.
 
 **IMPORTANT**: This endpoint has no associated authorizers and is therefore is public.
-In a real world application, some form of authentication authentication should be used e.g. Cognito User Pools or a Lambda authorizer.
+In a real world application, some form of authentication authentication should be used e.g. Cognito User Pools, AWS IAM or a Lambda authorizer.
 
 Get the API Gateway URL from  AWS console or from the provisioning output of SAM CLI and add it to ```ReviewForm.js``` (it's inside the ```reviews-mfe``` folder) in the ```URL``` constant.
 
