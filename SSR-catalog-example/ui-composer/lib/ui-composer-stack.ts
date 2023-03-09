@@ -95,7 +95,12 @@ export class UiComposerStack extends Stack {
               resources: [
                 `arn:aws:lambda:${process.env.region || "eu-west-1"}:${account.accountId}:function:*`,
                 `arn:aws:states:${process.env.region || "eu-west-1"}:${account.accountId}:stateMachine:*`
-              ]
+              ],
+              conditions: {
+                'StringLike': {
+                  "aws:ResourceTag/mfe": `${process.env.MFE_NAMESPACE ?? "demo"}.*`,
+                },
+              }
             }),
             new aws_iam.PolicyStatement({
               effect: aws_iam.Effect.ALLOW,
