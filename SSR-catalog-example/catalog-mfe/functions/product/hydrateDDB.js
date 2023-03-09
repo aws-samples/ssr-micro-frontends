@@ -29,8 +29,8 @@ exports.lambdaHandler = async (event, context) => {
     const { RequestType, ResponseURL } = event;
     let response;
     
-    // if (RequestType.toLowerCase() === 'create') {
-    if (RequestType.toLowerCase() !== 'delete') {
+    if (RequestType.toLowerCase() === 'create') {
+        
         postBookParams = {
             TableName: TABLE,
             Item:{
