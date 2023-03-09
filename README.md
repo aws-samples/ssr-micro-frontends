@@ -29,10 +29,10 @@ It's important to highlight that this project is managed by several teams in an 
 
 You can read an extensive description of this approach in this blog series:
 
-- [server-side rendering micro-frontends - the architecture](link)
-- [server-side rendering micro-frontends – UI composer and service discovery](link)
+- [server-side rendering micro-frontends - the architecture](https://aws.amazon.com/blogs/compute/server-side-rendering-micro-frontends-the-architecture/)
+- [server-side rendering micro-frontends – UI composer and service discovery](https://aws.amazon.com/blogs/compute/server-side-rendering-micro-frontends-ui-composer-and-service-discovery/)
 
-More posts are written as we speak so keep an eye on the [AWS Compute Blog](link).
+More posts are written as we speak so keep an eye on the [AWS Compute Blog](https://aws.amazon.com/blogs/compute/).
 
 ### Pre-requisites
 
