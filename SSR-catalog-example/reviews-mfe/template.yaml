@@ -4,7 +4,14 @@ Description: >
   reviews-mfe
 
   Sample SAM Template for reviews-mfe
-  
+
+
+Parameters:
+  MFENamespace:
+    Type: String
+    Description: The namespace to use for the mfe tag
+    Default: demo
+
 Globals:
   Function:
     Timeout: 30
@@ -52,6 +59,8 @@ Resources:
           Properties:
             Path: /review
             Method: post
+      Tags:
+        mfe: !Sub ${MFENamespace}.reviews
   ReviewsMFEFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -60,6 +69,8 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref ReviewsTable
+      Tags:
+        mfe: !Sub ${MFENamespace}.reviews
   ServiceDiscoveryID:
     Type: AWS::SSM::Parameter
     Properties:
@@ -74,7 +85,7 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ReviewsTable
-  
+
   DeploymentCustomResource:
     Type: Custom::AppConfiguration
     Properties:

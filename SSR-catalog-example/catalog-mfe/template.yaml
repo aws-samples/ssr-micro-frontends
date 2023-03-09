@@ -18,6 +18,10 @@ Parameters:
   DDBProductsTable:
     Type: String
     Default: ProductsTable
+  MFENamespace:
+    Type: String
+    Description: The namespace to use for the mfe tag
+    Default: demo
 
 Resources:
 
@@ -63,6 +67,8 @@ Resources:
             TableName: !Ref DynamoTable
         - DynamoDBReadPolicy:
             TableName: !Ref ProductsTable
+      Tags:
+        mfe: !Sub ${MFENamespace}.catalog
 
   ProductFunction:
     Type: AWS::Serverless::Function
