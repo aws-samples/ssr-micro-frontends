@@ -104,6 +104,8 @@ The ```static``` folder should look like this screenshot now:
 
 ![static folder in S3 bucket](./images/s3-static-folder.png)
 
+Finally, add a JPG image called ```book.jpg``` in the ```static``` folder of the S3 bucket, that is the image that will be displayed by default when you deploy for the first time this project in your AWS account.
+
 We now need to create a new folder in the S3 bucket called ```templates``` and upload the file used as HTML template for rendering the final page. Upload ```SSR-catalog-example/ui-composer/static/catalog.template``` in the ```templates``` folder.
 
 ![templates folder in S3 bucket](./images/s3-templates-folder.png)

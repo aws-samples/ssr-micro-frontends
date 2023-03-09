@@ -17,7 +17,7 @@ Globals:
       Variables:
         AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
         Region: !Ref AWS::Region
-        DatabaseTable: !Ref DynamoTable
+        DatabaseTable: !Ref ReviewsTable
   Api:
     TracingEnabled: True
     Cors:
@@ -28,7 +28,7 @@ Globals:
       Type: REGIONAL 
     
 Resources:
-  DynamoTable:
+  ReviewsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
@@ -45,7 +45,7 @@ Resources:
       Handler: POST_Reviews.lambdaHandler
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref DynamoTable
+            TableName: !Ref ReviewsTable
       Events:
         ReviewsGateway:
           Type: Api
@@ -59,13 +59,26 @@ Resources:
       Handler: GET_Reviews.lambdaHandler
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Ref DynamoTable
+            TableName: !Ref ReviewsTable
   ServiceDiscoveryID:
     Type: AWS::SSM::Parameter
     Properties:
       Name: /ssr-mfe/reviewARN
       Type: String
       Value: !Ref ReviewsMFEFunction
+  HydrateDDBFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: reviews
+      Handler: hydrateDDB.lambdaHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReviewsTable
+  
+  DeploymentCustomResource:
+    Type: Custom::AppConfiguration
+    Properties:
+      ServiceToken: !GetAtt HydrateDDBFunction.Arn
 
 Outputs:
   ReviewsGatewayApi:

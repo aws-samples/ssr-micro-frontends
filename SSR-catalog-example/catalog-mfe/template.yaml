@@ -77,3 +77,22 @@ Resources:
       Name: /ssr-mfe/catalogARN
       Type: String
       Value: !Ref ProductStateMachine
+
+  HydrateDDBFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Environment:
+        Variables:
+          Region: !Ref AWS::Region
+          DatabaseTable: !Ref ProductsTable
+      AutoPublishAlias: prod
+      CodeUri: functions/product
+      Handler: hydrateDDB.lambdaHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+  
+  DeploymentCustomResource:
+    Type: Custom::AppConfiguration
+    Properties:
+      ServiceToken: !GetAtt HydrateDDBFunction.Arn
