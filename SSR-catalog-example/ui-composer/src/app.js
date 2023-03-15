@@ -9,28 +9,28 @@ const PORT = process.env.PORT || 3000;
 let MFElist, catalogTemplate
 
 fastify.get('/home', async (request, reply) => {
-  reply
+  return reply
     .code(200)
     .header('content-type', 'text/html')
     .send("Welcome to the Micro-Frontends in AWS example")
 })
 
 fastify.setErrorHandler(function (error, request, reply) {
-  reply
+  return reply
     .code(500)
     .header('content-type', 'text/html')
     .send(serverErrorPage())
 })
 
 fastify.setNotFoundHandler({}, (request, reply) => {
-  reply
+  return reply
     .code(404)
     .header('content-type', 'text/html')
     .send(notFoundPage())
 })
 
 fastify.get('/health', async(request, reply) => {
-  reply
+  return reply
     .code(200)
     .send({healthy: true})
 })
@@ -38,7 +38,7 @@ fastify.get('/health', async(request, reply) => {
 fastify.get('/productdetails', async(request, reply) => {
   try{
     const catalogDetailspage = await transformTemplate(catalogTemplate)
-    reply
+    return reply
       .code(200)
       .header('content-type', 'text/html')
       .send(catalogDetailspage)
