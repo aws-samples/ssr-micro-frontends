@@ -30,7 +30,7 @@
     "@fastify/error": "^3.2.0",
     "axios": "^0.27.2",
     "constructs": "^10.1.262",
-    "fastify": "^4.13.0",
+    "fastify": "^4.29.1",
     "htm": "^3.1.1",
     "node-html-parser": "^6.1.5",
     "preact": "^10.13.0"
